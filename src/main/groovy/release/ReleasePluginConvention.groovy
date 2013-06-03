@@ -20,6 +20,7 @@ class ReleasePluginConvention {
 	String preTagCommitMessage = "[Gradle Release Plugin] - pre tag commit: "
 	String tagCommitMessage = "[Gradle Release Plugin] - creating tag: "
 	String newVersionCommitMessage = "[Gradle Release Plugin] - new version commit: "
+	String svnPassword = null // password used for svn authentication
 
 	/**
 	 * If true, tag names and messages will include the project name (e.g. project-name-version)

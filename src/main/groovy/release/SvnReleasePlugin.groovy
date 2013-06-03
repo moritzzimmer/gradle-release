@@ -56,8 +56,16 @@ class SvnReleasePlugin extends BaseScmPlugin<SvnReleasePluginConvention> {
 		String svnRev = props.releaseSvnRev
 		String svnRoot = props.releaseSvnRoot
 		String svnRemoteRev = ""
+
 		// svn status -q -u
-		String out = exec('svn', 'status', '-q', '-u')
+		String out
+		if (releaseConvention().svnPassword) {
+			log.info(">>> Using SVN password from plugin convention!")
+			out = exec('svn', 'status', '-q', '-u', '--password', releaseConvention().svnPassword)
+		} else {
+			out = exec('svn', 'status', '-q', '-u')
+		}
+
 		def missing = []
 		out.eachLine { line ->
 			switch (line?.trim()?.charAt(0)) {
@@ -70,7 +78,13 @@ class SvnReleasePlugin extends BaseScmPlugin<SvnReleasePluginConvention> {
 			warnOrThrow(releaseConvention().failOnUpdateNeeded, "You are missing ${missing.size()} changes.")
 		}
 
-		out = exec(true, [LC_COLLATE: "C", LC_CTYPE: "en_US.UTF-8"], 'svn', 'info', project.ext['releaseSvnUrl'])
+		if (releaseConvention().svnPassword) {
+			log.info(" >>> Using SVN password from plugin convention!")
+			out = exec(true, [LC_COLLATE: "C", LC_CTYPE: "en_US.UTF-8"], 'svn', 'info', project.ext['releaseSvnUrl'], '--password', releaseConvention().svnPassword)
+		} else {
+			out = exec(true, [LC_COLLATE: "C", LC_CTYPE: "en_US.UTF-8"], 'svn', 'info', project.ext['releaseSvnUrl'])
+		}
+
 		out.eachLine { line ->
 			Matcher matcher = line =~ revPattern
 			if (matcher.matches()) {
@@ -99,7 +113,13 @@ class SvnReleasePlugin extends BaseScmPlugin<SvnReleasePluginConvention> {
 
 	@Override
 	void commit(String message) {
-		exec(['svn', 'ci', '-m', message], 'Error committing new version', ERROR)
+		if (releaseConvention().svnPassword) {
+			log.info(" >>> Using SVN password from plugin convention!")
+			exec(['svn', 'ci', '-m', message, '--password', releaseConvention().svnPassword], 'Error committing new version', ERROR)
+		} else {
+			exec(['svn', 'ci', '-m', message], 'Error committing new version', ERROR)
+		}
+		
 	}
 
 	@Override
