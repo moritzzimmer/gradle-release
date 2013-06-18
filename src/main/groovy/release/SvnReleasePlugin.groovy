@@ -59,9 +59,9 @@ class SvnReleasePlugin extends BaseScmPlugin<SvnReleasePluginConvention> {
 
 		// svn status -q -u
 		String out
-		if (releaseConvention().svnPassword) {
+		if (releaseConvention().svnPassword && releaseConvention().svnUser) {
 			log.info(">>> Using SVN password from plugin convention!")
-			out = exec('svn', 'status', '-q', '-u', '--password', releaseConvention().svnPassword)
+			out = exec('svn', 'status', '-q', '-u', '--non-interactive', '--no-auth-cache', '--username', releaseConvention().svnUser, '--password', releaseConvention().svnPassword)
 		} else {
 			out = exec('svn', 'status', '-q', '-u')
 		}
@@ -78,9 +78,9 @@ class SvnReleasePlugin extends BaseScmPlugin<SvnReleasePluginConvention> {
 			warnOrThrow(releaseConvention().failOnUpdateNeeded, "You are missing ${missing.size()} changes.")
 		}
 
-		if (releaseConvention().svnPassword) {
+		if (releaseConvention().svnPassword && releaseConvention().svnUser) {
 			log.info(" >>> Using SVN password from plugin convention!")
-			out = exec(true, [LC_COLLATE: "C", LC_CTYPE: "en_US.UTF-8"], 'svn', 'info', project.ext['releaseSvnUrl'], '--password', releaseConvention().svnPassword)
+			out = exec(true, [LC_COLLATE: "C", LC_CTYPE: "en_US.UTF-8"], 'svn', 'info', project.ext['releaseSvnUrl'], '--non-interactive', '--no-auth-cache', '--username', releaseConvention().svnUser, '--password', releaseConvention().svnPassword)
 		} else {
 			out = exec(true, [LC_COLLATE: "C", LC_CTYPE: "en_US.UTF-8"], 'svn', 'info', project.ext['releaseSvnUrl'])
 		}
@@ -107,15 +107,22 @@ class SvnReleasePlugin extends BaseScmPlugin<SvnReleasePluginConvention> {
 		String svnRoot = props.releaseSvnRoot
 		String svnTag = tagName()
 
-		exec('svn', 'cp', "${svnUrl}@${svnRev}", "${svnRoot}/tags/${svnTag}", '-m', message ?: "Created by Release Plugin: ${svnTag}")
+		if (releaseConvention().svnPassword && releaseConvention().svnUser) {
+			log.info(" >>> Using SVN password from plugin convention!")
+			exec('svn', 'cp', "${svnUrl}@${svnRev}", "${svnRoot}/tags/${svnTag}", '-m', message ?: "Created by Release Plugin: ${svnTag}", 
+				'--non-interactive', '--no-auth-cache', '--username', releaseConvention().svnUser, '--password', releaseConvention().svnPassword)
+		} else {
+			exec('svn', 'cp', "${svnUrl}@${svnRev}", "${svnRoot}/tags/${svnTag}", '-m', message ?: "Created by Release Plugin: ${svnTag}")
+
+		}
 	}
 
 
 	@Override
 	void commit(String message) {
-		if (releaseConvention().svnPassword) {
+		if (releaseConvention().svnPassword && releaseConvention().svnUser) {
 			log.info(" >>> Using SVN password from plugin convention!")
-			exec(['svn', 'ci', '-m', message, '--password', releaseConvention().svnPassword], 'Error committing new version', ERROR)
+			exec(['svn', 'ci', '-m', message, '--non-interactive', '--no-auth-cache', '--username', releaseConvention().svnUser, '--password', releaseConvention().svnPassword], 'Error committing new version', ERROR)
 		} else {
 			exec(['svn', 'ci', '-m', message], 'Error committing new version', ERROR)
 		}

@@ -20,6 +20,9 @@ class ReleasePluginConvention {
 	String preTagCommitMessage = "[Gradle Release Plugin] - pre tag commit: "
 	String tagCommitMessage = "[Gradle Release Plugin] - creating tag: "
 	String newVersionCommitMessage = "[Gradle Release Plugin] - new version commit: "
+	
+	// TODO (MoZi): refactor this to separate (authentication) object
+	String svnUser = null // user used for svn authentication
 	String svnPassword = null // password used for svn authentication
 
 	/**

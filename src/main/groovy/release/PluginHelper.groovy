@@ -78,10 +78,17 @@ class PluginHelper {
 	 * @return command "stdout" output
 	 */
 	String exec(boolean failOnStderr = true, Map env = [:], File directory = null, String... commands) {
-
+		/*
+		 * MoZi: ignore the directory parameter - always use the gradle project directory. Otherwise
+		 * Jenkins jobs with multiple SVN locations will fail.
+		 *
+		 * TODO: refactor this to method invocations in SVNReleasePlugin
+		 */
+		directory = project.getProjectDir()
+		
 		def out = new StringBuffer()
 		def err = new StringBuffer()
-		def logMessage = "Running \"${commands.join(' ')}\"${ directory ? ' in [' + directory.canonicalPath + ']' : '' }"
+		def logMessage = "Running \"${commands.join(' ')}\"${ directory ? ' in [' + directory.canonicalPath + ']' : '' } in $directory"
 		def process = (env || directory) ?
 			(commands as List).execute(env.collect { "$it.key=$it.value" } as String[], directory) :
 			(commands as List).execute()
@@ -118,8 +125,14 @@ class PluginHelper {
 		def out = new StringBuffer()
 		def err = new StringBuffer()
 
+		/*
+		 * MoZi: use project dir for command execution. Otherwise
+		 * Jenkins jobs with multiple SVN locations will fail.
+		 * 
+		 *  TODO: introduce method parameter
+		 */
 		log.info(" >>> Running $commands")
-		def process = commands.execute()
+		def process = commands.execute(null, project.getProjectDir())
 
 		process.waitForProcessOutput(out, err)
 
