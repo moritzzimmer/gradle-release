@@ -59,7 +59,7 @@ class SvnReleasePlugin extends BaseScmPlugin<SvnReleasePluginConvention> {
 
 		// svn status -q -u
 		String out
-		if (releaseConvention().svnPassword && releaseConvention().svnUser) {
+		if (releaseConvention().useCredentials()) {
 			log.info(">>> Using SVN password from plugin convention!")
 			out = exec('svn', 'status', '-q', '-u', '--non-interactive', '--no-auth-cache', '--username', releaseConvention().svnUser, '--password', releaseConvention().svnPassword)
 		} else {
@@ -78,7 +78,7 @@ class SvnReleasePlugin extends BaseScmPlugin<SvnReleasePluginConvention> {
 			warnOrThrow(releaseConvention().failOnUpdateNeeded, "You are missing ${missing.size()} changes.")
 		}
 
-		if (releaseConvention().svnPassword && releaseConvention().svnUser) {
+		if (releaseConvention().useCredentials()) {
 			log.info(" >>> Using SVN password from plugin convention!")
 			out = exec(true, [LC_COLLATE: "C", LC_CTYPE: "en_US.UTF-8"], 'svn', 'info', project.ext['releaseSvnUrl'], '--non-interactive', '--no-auth-cache', '--username', releaseConvention().svnUser, '--password', releaseConvention().svnPassword)
 		} else {
@@ -107,7 +107,7 @@ class SvnReleasePlugin extends BaseScmPlugin<SvnReleasePluginConvention> {
 		String svnRoot = props.releaseSvnRoot
 		String svnTag = tagName()
 
-		if (releaseConvention().svnPassword && releaseConvention().svnUser) {
+		if (releaseConvention().useCredentials()) {
 			log.info(" >>> Using SVN password from plugin convention!")
 			exec('svn', 'cp', "${svnUrl}@${svnRev}", "${svnRoot}/tags/${svnTag}", '-m', message ?: "Created by Release Plugin: ${svnTag}", 
 				'--non-interactive', '--no-auth-cache', '--username', releaseConvention().svnUser, '--password', releaseConvention().svnPassword)
@@ -120,7 +120,7 @@ class SvnReleasePlugin extends BaseScmPlugin<SvnReleasePluginConvention> {
 
 	@Override
 	void commit(String message) {
-		if (releaseConvention().svnPassword && releaseConvention().svnUser) {
+		if (releaseConvention().useCredentials()) {
 			log.info(" >>> Using SVN password from plugin convention!")
 			exec(['svn', 'ci', '-m', message, '--non-interactive', '--no-auth-cache', '--username', releaseConvention().svnUser, '--password', releaseConvention().svnPassword], 'Error committing new version', ERROR)
 		} else {

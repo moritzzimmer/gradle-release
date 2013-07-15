@@ -6,4 +6,11 @@ package release
  */
 class SvnReleasePluginConvention {
     String tags = 'tags'
+	
+	String user = null // user used for svn authentication
+	String password = null // password used for svn authentication
+	
+	boolean useCredentials() {
+		return user && password
+	}
 }
